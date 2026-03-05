@@ -215,7 +215,7 @@ fi
 if [ -n "${JUHPC_CUDA_HOME}" ]; then export CUDA_HOME="$JUHPC_CUDA_HOME"; fi
 if [ -n "${JUHPC_ROCM_HOME}" ]; then export ROCM_PATH="$JUHPC_ROCM_HOME"; fi
 
-julia_pref 'using Pkg; Pkg.add([p for (p,l) in [("MPIPreferences", "JUHPC_MPI_VENDOR"), ("MPIPreferences", "JUHPC_MPI_HOME"), ("CUDA", "JUHPC_CUDA_HOME"), ("AMDGPU", "JUHPC_ROCM_HOME"), ("HDF5", "JUHPC_HDF5_HOME")] if haskey(ENV,l) && ENV[l]!=""])' 70
+julia_pref 'using Pkg; Pkg.add([p for (p,l) in [("MPIPreferences", "JUHPC_MPI_VENDOR"), ("MPIPreferences", "JUHPC_MPI_HOME"), ("MPIPreferences", "JUHPC_MPI_TRAMPOLINE"), ("CUDA", "JUHPC_CUDA_HOME"), ("AMDGPU", "JUHPC_ROCM_HOME"), ("HDF5", "JUHPC_HDF5_HOME")] if haskey(ENV,l) && ENV[l]!=""])' 70
 
 if [ -n "${JUHPC_CUDA_HOME}" ]; then  # Set  preference for using the local CUDA runtime in a more stable way (in case the previous would not be valid anymore)
     julia_pref 'using CUDA; CUDA.set_runtime_version!((VersionNumber(join(split(ENV[key],".")[1:2],".")) for key in ["JUHPC_CUDA_RUNTIME_VERSION"] if haskey(ENV,key) && ENV[key]!=="")...; local_toolkit=true)' 80
@@ -231,6 +231,9 @@ if [ -n "${JUHPC_MPI_VENDOR}" ]; then
 elif [ -n "${JUHPC_MPI_HOME}" ]; then
     check_var "JUHPC_MPI_EXEC"
     julia_pref 'using MPIPreferences; MPIPreferences.use_system_binary(mpiexec=split(ENV["JUHPC_MPI_EXEC"]), extra_paths=["$(ENV["JUHPC_MPI_HOME"])/lib"])' 90
+elif [ -n "${JUHPC_MPI_TRAMPOLINE}" ]; then
+    check_var "JUHPC_MPI_EXEC"
+    julia_pref 'using MPIPreferences; MPIPreferences.use_jll_binary("MPItrampoline_jll")' 90
 fi
 
 if [ -n "${JUHPC_HDF5_HOME}" ]; then
