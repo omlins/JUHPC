@@ -7,6 +7,11 @@
 # - an activation script that sets environment variables for juliaup, julia and HPC key packages;
 # - optionally executing a site-specific post installation julia script, using the project where preferences were set (e.g, to modify preferences or to create an uenv view equivalent to the activation script).
 
+# Check if any JUHPC environment variables has been set by the user
+export JUHPC_USER_ENV_SET=0
+if env | grep -q '^JUHPC_'; then
+    export JUHPC_USER_ENV_SET=1
+fi
 
 # Define log, info, error, cleanup, check functions and julia call for setting preferences
 
@@ -473,4 +478,8 @@ cleanup
 mv "$JULIA_PREFDIR/Manifest.toml" "$JULIA_PREFDIR/Manifest.toml.bak" || { error "failed to move Manifest.toml in $JULIA_PREFDIR"; }
 mv "$JUHPC_SETUP_INSTALLLOG" "$JUHPC_SETUP_INSTALLDIR/" || { error "failed to move $JUHPC_SETUP_INSTALLLOG to $JUHPC_SETUP_INSTALLDIR"; }
 
-info "... The installation of the HPC setup for juliaup, julia and HPC key packages is complete.\n\n"
+if [ "$JUHPC_USER_ENV_SET" -eq 1 ]; then
+    info "... The installation of the HPC setup for juliaup, julia and HPC key packages is complete.\n\n"
+else
+    info "\e[1;33mWARNING:\e[0m ... The installation of the HPC setup for juliaup, julia and HPC key packages is complete, but no JUHPC environment variable was set by the user.\n\n"
+fi
