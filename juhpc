@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Description: 
-# Create an HPC setup for juliaup, julia and some HPC key packages (MPI.jl, CUDA.jl, AMDGPU.jl, HDF5.jl, ADIOS2.jl, ...), including
+# Create an HPC setup for juliaup, julia and some HPC key packages (MPI.jl, CUDA.jl, AMDGPU.jl, HDF5.jl, ADIOS2.jl, Reactant.jl, ...), including
 # - preferences for HPC key packages that require system libraries;
 # - a wrapper for juliaup that installs juliaup (and latest julia) in an appropriate location (e.g., scratch) if it is not already installed;
 # - an activation script that sets environment variables for juliaup, julia and HPC key packages;
@@ -182,7 +182,7 @@ if [ ! -f "$TMP_JULIAUP_BINDIR/juliaup" ]; then error "temporary juliaup install
 info "... done: temporary installation completed."
 
 
-# Create preferences for HPC key packages that require system libraries (MPI.jl, CUDA.jl, AMDGPU.jl, HDF5.jl, ADIOS2.jl, ...)
+# Create preferences for HPC key packages that require system libraries (MPI.jl, CUDA.jl, AMDGPU.jl, HDF5.jl, ADIOS2.jl, Reactant.jl, ...)
 
 info "Creating preferences for HPC key packages (this can take a few minutes, because some packages have to be temporarily installed)..."
 
@@ -204,6 +204,20 @@ if [ -n "${JUHPC_CUDA_HOME}" ]; then  # Set preference for using the local CUDA 
     if [ -n "${JUHPC_CUDA_RUNTIME_VERSION}" ]; then
         julia_pref 'using Preferences; set_preferences!("CUDA_Runtime_jll", "version"=>join(split(ENV["JUHPC_CUDA_RUNTIME_VERSION"],".")[1:2],"."))' 40
     fi
+fi
+
+if [ -n "${JUHPC_NCCL_HOME}" ]; then  # Set preference for using the local NCCL runtime in Reactant.jl/Reactant_jll
+    echo 'Reactant_jll = "0192cb87-2b54-54ad-80e0-3be72ad8a3c0"' >> "$JULIA_PREF_PROJECT"
+
+    if [ -f "${JUHPC_NCCL_HOME}/lib/libnccl.so.2" ]; then
+        export JUHPC_NCCL_PATH="${JUHPC_NCCL_HOME}/lib/libnccl.so.2"
+    elif [ -f "${JUHPC_NCCL_HOME}/lib64/libnccl.so.2" ]; then
+        export JUHPC_NCCL_PATH="${JUHPC_NCCL_HOME}/lib64/libnccl.so.2"
+    else
+        error "libnccl.so.2 not found in $JUHPC_NCCL_HOME/lib or $JUHPC_NCCL_HOME/lib64."
+    fi
+
+    julia_pref 'using Preferences; set_preferences!("Reactant_jll", "libnccl_path"=>ENV["JUHPC_NCCL_PATH"])' 43
 fi
 
 if [ -n "${JUHPC_ROCM_HOME}" ]; then  # Set preference for using the local ROCm runtime before any installation of AMDGPU.jl to avoid downloading of artifacts
