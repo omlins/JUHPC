@@ -49,8 +49,9 @@ Details are given in the following two subsections.
   - `JUHPC_ROCM_HOME`: Activates HPC setup for AMDGPU and is used for AMDGPU.jl runtime discovery (set as `ROCM_PATH` in the activate script).
 
 - MPI
-  - `JUHPC_MPI_HOME`: Activates HPC setup for MPI and is used to set MPI.jl preferences. Incompatible with `JUHPC_MPI_VENDOR`
-  - `JUHPC_MPI_VENDOR`: Activates HPC setup for MPI and is used to set MPI.jl preferences (currently only "cray" is valid, see [here](https://juliaparallel.org/MPI.jl/stable/configuration/#Notes-about-vendor-provided-MPI-backends)). Incompatible with `JUHPC_MPI_HOME`.
+  - `JUHPC_MPI_HOME`: Activates HPC setup for MPI and is used to set MPI.jl preferences. Incompatible with `JUHPC_MPI_VENDOR` and `JUHPC_MPI_TRAMPOLINE`.
+  - `JUHPC_MPI_VENDOR`: Activates HPC setup for MPI and is used to set MPI.jl preferences (currently only "cray" is valid, see [here](https://juliaparallel.org/MPI.jl/stable/configuration/#Notes-about-vendor-provided-MPI-backends)). Incompatible with `JUHPC_MPI_HOME` and `JUHPC_MPI_TRAMPOLINE`.
+  - `JUHPC_MPI_TRAMPOLINE`: Activates HPC setup for MPI and is used to set MPI.jl preferences. Specifies that MPI calls using system MPI installations should be routed through MPItrampoline. Requires [MPIwrapper](https://github.com/eschnett/MPIwrapper) to be installed and the `MPITRAMPOLINE_LIB` environment variable to be set, see [here](https://juliaparallel.org/MPI.jl/stable/configuration/#using_mpitrampoline). Incompatible with `JUHPC_MPI_HOME` and `JUHPC_MPI_VENDOR`.
   - `JUHPC_MPI_EXEC`: Used to set MPI.jl preferences (exec command definition). Arguments are space separated, e.g., `"srun -C gpu"`.
 
 - HDF5
