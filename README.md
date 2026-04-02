@@ -7,7 +7,7 @@ JUHPC is an attempt to convert the numerous efforts at different HPC sites for d
 
 An important lesson learned by the Julia HPC community for providing Julia at HPC sites is not to preinstall any packages site wide. JUHPC pushes this insight even one step further and does not preinstall Julia either. Instead, Juliaup is leveraged and the installation of Juliaup, Julia and packages is preconfigured for being automatically executed by the end user. Furthermore, for maximal robustness, the preferences are created using the available API calls of the corresponding packages.
 
-Concretely, JUHPC creates an HPC setup for Juliaup, Julia and some HPC key packages (MPI.jl, CUDA.jl, AMDGPU.jl, HDF5.jl, ADIOS2.jl, ...), including
+Concretely, JUHPC creates an HPC setup for Juliaup, Julia and some HPC key packages (MPI.jl, CUDA.jl, AMDGPU.jl, HDF5.jl, ADIOS2.jl, Reactant.jl, ...), including
 - preferences for HPC key packages that require system libraries;
 - a wrapper for Juliaup that will install Juliaup (and latest Julia) automatically in a predefined location (e.g., scratch) when the end user calls `juliaup` the first time;
 - an activation script that sets environment variables for Juliaup, Julia and HPC key packages;
@@ -44,6 +44,9 @@ Details are given in the following two subsections.
 - CUDA
   - `JUHPC_CUDA_HOME`: Activates HPC setup for CUDA and is used for CUDA.jl runtime discovery (set as `CUDA_HOME` in the activate script).
   - `JUHPC_CUDA_RUNTIME_VERSION`: Used to set CUDA.jl preferences (fixes runtime version enabling pre-compilation on login nodes).
+
+- Reactant
+  - `JUHPC_NCCL_HOME`: Activates HPC setup for Reactant.jl and is used to set the `Reactant_jll` preference `libnccl_path`.
 
 - AMDGPU
   - `JUHPC_ROCM_HOME`: Activates HPC setup for AMDGPU and is used for AMDGPU.jl runtime discovery (set as `ROCM_PATH` in the activate script).
@@ -101,7 +104,7 @@ module load cudatoolkit craype-accel-nvidia90
 module load cray-hdf5-parallel
 module list
 
-# Environment variables for HPC key packages that require system libraries that require system libraries (MPI.jl, CUDA.jl, AMDGPU.jl, HDF5.jl and ADIOS2.jl)
+# Environment variables for HPC key packages that require system libraries that require system libraries (MPI.jl, CUDA.jl, AMDGPU.jl, HDF5.jl, ADIOS2.jl and Reactant.jl)
 export JUHPC_CUDA_HOME=$CUDA_HOME
 export JUHPC_CUDA_RUNTIME_VERSION=$CRAY_CUDATOOLKIT_VERSION
 export JUHPC_MPI_VENDOR="cray"
@@ -128,10 +131,11 @@ export ENV_META=$ENV_MOUNT/meta
 export ENV_EXTRA=$ENV_META/extra
 export ENV_JSON=$ENV_META/env.json
 
-# Environment variables for HPC key packages that require system libraries (MPI.jl, CUDA.jl, AMDGPU.jl, HDF5.jl and ADIOS2.jl)
+# Environment variables for HPC key packages that require system libraries (MPI.jl, CUDA.jl, AMDGPU.jl, HDF5.jl, ADIOS2.jl and Reactant.jl)
 export JUHPC_CUDA_HOME=$(spack -C $ENV_MOUNT/config location -i cuda)
 export JUHPC_CUDA_RUNTIME_VERSION=$(spack --color=never -C $ENV_MOUNT/config find cuda | \
                                     perl -ne 'print $1 if /cuda@([\d.]+)/')
+export JUHPC_NCCL_HOME=$(spack -C $ENV_MOUNT/config location -i nccl)
 export JUHPC_MPI_HOME=$(spack -C $ENV_MOUNT/config location -i cray-mpich)
 export JUHPC_MPI_EXEC="srun -C gpu"
 export JUHPC_HDF5_HOME=$(spack -C $ENV_MOUNT/config location -i hdf5)
